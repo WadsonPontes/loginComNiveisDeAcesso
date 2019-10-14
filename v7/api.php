@@ -129,9 +129,8 @@ function buscarID($CONEXAO) {
 function buscarNivel($CONEXAO, $TABELA_USUARIOS) {
 	if (!isset($_SESSION["id"]))
 		return "Error";
-
-	$busca = $CONEXAO->query("SELECT * FROM $TABELA_USUARIOS WHERE id = ".$_SESSION["id"]);
-	$usuario = $busca->fetchAll();
+	
+	$usuario = buscar($CONEXAO, $TABELA_USUARIOS, "id", $_SESSION["id"]);
 
 	if (count($usuario) == 0)
 		return "Error";
