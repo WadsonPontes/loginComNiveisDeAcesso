@@ -125,11 +125,11 @@ function buscarID($CONEXAO) {
 	return $id;
 }
 
-// Retorna nível de acesso do usuário atual
+// Retorna o nível de acesso do usuário atual ou a string "Error"
 function buscarNivel($CONEXAO, $TABELA_USUARIOS) {
 	if (!isset($_SESSION["id"]))
 		return "Error";
-	
+
 	$usuario = buscar($CONEXAO, $TABELA_USUARIOS, "id", $_SESSION["id"]);
 
 	if (count($usuario) == 0)
