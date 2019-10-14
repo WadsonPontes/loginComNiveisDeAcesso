@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+	Nome:<input type="text" id="nome"><br/>
+	Email:<input type="text" id="email"><br/>
+	Telefone:<input type="text" id="tel"><br/>
+	Nível de acesso:<input type="text" id="nivel"><br/>
+	Senha:<input type="password" id="senha"><br/>
+	<input type="button" value="Cadastrar" id="botao">
+	<p id="msg"></p>
+
+	<script type="text/javascript">
+		const ARQUIVO = "api.php";
+		const nome = document.getElementById("nome");
+		const email = document.getElementById("email");
+		const tel = document.getElementById("tel");
+		const nivel = document.getElementById("nivel");
+		const senha = document.getElementById("senha");
+		const botao = document.getElementById("botao");
+		const msg = document.getElementById("msg");
+
+		botao.addEventListener("click", function() { cadastrar(nome.value, email.value, tel.value, nivel.value, senha.value); });
+
+		function cadastrar(nome, email, tel, nivel, senha) {
+			let xhttp = new XMLHttpRequest();
+			
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					console.log(this.responseText);
+					retorno(JSON.parse(this.responseText));
+				}
+			};
+			xhttp.open("POST", ARQUIVO, true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("operacao=Cadastro&nome=" + encodeURIComponent(nome) + "&email=" + encodeURIComponent(email) + "&tel=" + encodeURIComponent(tel) + "&nivel=" + encodeURIComponent(nivel) + "&senha=" + encodeURIComponent(senha));
+		}
+
+		function retorno(r) {
+			if (r.msg == "Sucesso")
+				window.location.href = "login.html";
+			else
+				msg.innerHTML = r.msg;
+		}
+	</script>
+</body>
+</html>

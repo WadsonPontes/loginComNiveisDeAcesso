@@ -1,0 +1,12 @@
+17:48 - Pseudocodigo
+
+Tela Cadastro:
+Campo String 60 Nome
+Campo String 60 Email
+Campo String 60 Telefone
+Campo String 60 Nível de acesso (Usuario, Cliente, Financeiro, T.I, admin master)
+Campo String 60 Senha
+
+Tela login:
+Email
+Senha
