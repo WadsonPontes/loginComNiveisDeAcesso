@@ -148,8 +148,7 @@ function buscarRelatorio($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_U
 		return;
 
 	try {
-		$busca = $CONEXAO->query("SELECT * FROM $TABELA_LOG WHERE id_usuario = $id");
-		$log = $busca->fetchAll();
+		$log = buscar($CONEXAO, $TABELA_LOG, "id_usuario", $id);
 
 		gravarLOG($_SESSION["id"], "Requisição de relatório do usuário $id", $CONEXAO, $TABELA_LOG);
 		retornarRelatorioNivel($id, $log, $CONEXAO, $TABELA_USUARIOS);
