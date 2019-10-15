@@ -25,7 +25,7 @@ function atualizarToken($id, $CONEXAO, $TABELA_USUARIOS) {
 
 // Retorna 1 caso as dados do usuário batam com os do banco de dados
 function autenticacao($nivel_pag, $SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS, $TABELA_LOG) {
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL)
 		return 0;
@@ -62,7 +62,7 @@ function autenticacao($nivel_pag, $SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, 
 
 // Retorna 1 se o usuário tem um token e bate com o token do banco de dados, redireciona caso contrário
 function autenticacaRedireciona($nivel_pag, $SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS, $TABELA_LOG) {
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL) {
 		header("Location: login.php");
@@ -142,7 +142,7 @@ function buscarNivel($CONEXAO, $TABELA_USUARIOS) {
 function buscarRelatorio($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS, $TABELA_LOG) {
 	$id = intval($_POST["id"]);
 
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL)
 		return;
@@ -161,14 +161,6 @@ function buscarRelatorio($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_U
 	}
 }
 
-// Recupera e retorna os dados de um usuário do banco de dados
-function buscarUsuario($email, $CONEXAO, $TABELA_USUARIOS) {
-	$busca = $CONEXAO->prepare("SELECT * FROM $TABELA_USUARIOS WHERE email = :email");
-	$busca->bindParam(':email', $email, PDO::PARAM_STR, 60);
-	$busca->execute();
-	return $busca->fetchAll();
-}
-
 // Cadastra um usuário no banco de dados ou retorna uma mensagem de erro
 function cadastrar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS, $TABELA_LOG) {
 	$nome = trim($_POST["nome"]);
@@ -178,7 +170,7 @@ function cadastrar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIO
 	$senha = $_POST["senha"];
 	$senha2 = $_POST["senha2"];
 
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL)
 		return;
@@ -207,15 +199,15 @@ function cadastrar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIO
 }
 
 // Conecta no servidor e retorna uma referência para a conexão
-function conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA) {
+function conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG) {
 	try {
-		$CONEXAO = new PDO(sprintf("mysql:host=%s;dbname=%s;charset=utf8", $SERVIDOR, $BANCO_DE_DADOS), $USUARIO, $SENHA);
+		$CONEXAO = new PDO(sprintf("mysql:host=%s;dbname=%s;charset=utf8", $SERVIDOR, $BANCO_DE_DADOS), $USUARIO, $SENHA, array(PDO::ATTR_PERSISTENT => true));
 		$CONEXAO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$atualizacao = $CONEXAO->query("SET time_zone = '-03:00'");
 		return $CONEXAO;
 	}
 	catch (PDOException $e) {
-		retornarMensagem("Falha na conexão: ".$e->getMessage());
+		gravarLOG(-1, "Falha na conexão: ".$e->getMessage(), $CONEXAO, $TABELA_LOG);
 		return NULL;
 	}
 }
@@ -267,13 +259,13 @@ function login($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS, $
 	$email = trim($_POST["email"]);
 	$senha = $_POST["senha"];
 
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL)
 		return;
 
 	try {
-		$usuario = buscarUsuario($email, $CONEXAO, $TABELA_USUARIOS);
+		$usuario = buscar($CONEXAO, $TABELA_USUARIOS, "email", $email);
 		$id = count($usuario) > 0 ? $usuario[0]["id"] : -1;
 
 		$situacao = validacaoLogin($usuario, $senha, $CONEXAO, $TABELA_LOG);
@@ -327,7 +319,7 @@ function retornarRelatorioNivel($id, $log, $CONEXAO, $TABELA_USUARIOS) {
 
 // Destrói todas as variáveis de sessão
 function sair($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG) {
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL)
 		return;
@@ -343,8 +335,8 @@ function sair($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG) {
 }
 
 // Retorna 1 e redireciona para a área específica do usuário caso esteja logado
-function seLogadoRedireciona($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS) {
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+function seLogadoRedireciona($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS, $TABELA_LOG) {
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL) {
 		header("Location: login.php");
@@ -374,7 +366,7 @@ function trocarNivel($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUAR
 	$id = intval($_POST["id"]);
 	$nivel = trim($_POST["nivel"]);
 
-	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA);
+	$CONEXAO = conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG);
 
 	if ($CONEXAO == NULL)
 		return;

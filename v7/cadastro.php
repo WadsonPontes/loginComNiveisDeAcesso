@@ -2,7 +2,7 @@
 include "api.php";
 include "constantes.php";
 
-if (!seLogadoRedireciona($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS)) {
+if (!seLogadoRedireciona($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_USUARIOS, $TABELA_LOG)) {
 ?>
 
 <!DOCTYPE html>
