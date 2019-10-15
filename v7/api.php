@@ -214,7 +214,9 @@ function conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG) {
 
 // Retorna 1 se o usuário errou a senha pelo menos 3 vezes na última hora
 function estaBloqueado($id, $CONEXAO, $TABELA_LOG) {
-	$busca = $CONEXAO->query("SELECT * FROM $TABELA_LOG WHERE id_usuario = $id AND data >= NOW() - INTERVAL 1 HOUR AND operacao = 'Falha no login: Senha incorreta'");
+	$busca = $CONEXAO->prepare("SELECT * FROM $TABELA_LOG WHERE id_usuario = :id AND data >= NOW() - INTERVAL 1 HOUR AND operacao = 'Falha no login: Senha incorreta'");
+	$busca->bindParam(':id', $id);
+	$busca->execute();
 	$tentativas = $busca->fetchAll();
 
 	return count($tentativas) > 2;
