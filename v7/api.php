@@ -207,7 +207,7 @@ function conectar($SERVIDOR, $BANCO_DE_DADOS, $USUARIO, $SENHA, $TABELA_LOG) {
 		return $CONEXAO;
 	}
 	catch (PDOException $e) {
-		gravarLOG(-1, "Falha na conexão: ".$e->getMessage(), $CONEXAO, $TABELA_LOG);
+		retornarMensagem("Falha na conexão: ".$e->getMessage());
 		return NULL;
 	}
 }
