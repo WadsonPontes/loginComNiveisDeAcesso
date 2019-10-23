@@ -1,8 +1,0 @@
-Amarelo: #e8a202
-Azul: #3552ff
-Cinza: #e1e1e1
-Cinza escuro: #666666
-Roxo: #800080
-Verde: #009632
-Laranja: #ec7302
-Vermelho: #fa1e1e
